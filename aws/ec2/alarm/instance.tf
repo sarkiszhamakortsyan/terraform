@@ -1,5 +1,5 @@
 resource "aws_instance" "linux_instance" {
-  name           = "linux-instance"
+  //name           = "linux-instance"
   //instance_count = var.instance_count
 
   ami           = data.aws_ami.aws-linux.id
