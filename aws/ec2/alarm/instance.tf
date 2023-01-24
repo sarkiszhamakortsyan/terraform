@@ -8,5 +8,7 @@ resource "aws_instance" "linux_instance" {
   vpc_security_group_ids = [aws_security_group.sg_linux.id]
   subnet_id              = module.vpc.public_subnets[1]
 
+  monitoring = true
+
   tags = var.instance_tags
 }
