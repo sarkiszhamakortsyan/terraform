@@ -24,6 +24,9 @@ output "instance-ip" {
   value = module.ec2_cluster.public_ip
 }
 
+output "instance-id" {
+  value = module.ec2_cluster.InstanceId
+}
 //output "instance-ip" {
 //  value = aws_instance.linux_instance.public_ip
 //}
