@@ -1,4 +1,7 @@
-resource "aws_instance" "linux-instance" {
+module "ec2_cluster" {
+  source = "terraform-aws-modules/ec2-instance/aws"
+  version = "~> 2.0"
+
   name           = "linux-instance"
   instance_count = var.instance_count
 
