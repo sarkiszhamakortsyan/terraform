@@ -11,6 +11,6 @@ resource "aws_cloudwatch_metric_alarm" "cpu_util" {
   insufficient_data_actions = []
 
   dimensions = {
-    "InstanceId" = "module.ec2_cluster"
+    "InstanceId" = "i-037514cfe233c6b85"
   }
 }
