@@ -1,4 +1,4 @@
-resource "aws_instance" "linux-instance" {
+resource "aws_instance" "linux_instance" {
   name           = "linux-instance"
   instance_count = var.instance_count
 

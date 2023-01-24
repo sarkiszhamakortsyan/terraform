@@ -20,6 +20,10 @@ variable "instance_tags" {
 
 // Output variable
 
+//output "instance-ip" {
+//  value = module.ec2_cluster.public_ip
+//}
+
 output "instance-ip" {
-  value = module.ec2_cluster.public_ip
+  value = aws_instance.linux-instance.public_ip
 }
