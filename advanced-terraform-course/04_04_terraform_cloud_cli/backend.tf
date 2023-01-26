@@ -1,9 +1,9 @@
 terraform {
   backend "remote" {
-    organization = "EBVGZ"
+    organization = "red30"
 
     workspaces {
-        name = "create-instance"
+      name = "cli-workspace"
     }
   }
 }
