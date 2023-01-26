@@ -1,0 +1,96 @@
+node {
+    stage('Clone') { // for display purposes
+        // Clone the configurations repository
+        cleanWs()
+        git 'https://github.com/sarkiszhamakortsyan/advanced-terraform-2823489.git'   
+    }
+    stage('Download') {
+        // Download Terraform
+        sh label: '', script: 'curl https://releases.hashicorp.com/terraform/0.13.1/terraform_0.13.1_linux_amd64.zip \
+            --output terraform_0.13.1_darwin_amd64.zip \
+             && unzip terraform_0.13.1_darwin_amd64.zip'
+    }
+    stage('Backend-Init') {
+        // Initialize the Terraform configuration
+        dir('03_02-03_remotestate/remote_resources') {
+            sh script: '../../terraform init -input=false'
+        }
+        
+    }
+    stage('Backend-Plan') {
+        // Create Terraform plan for backend resources
+        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                        string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+            dir('03_02-03_remotestate/remote_resources') {
+                sh script: '../../terraform plan \
+                        -out backend.tfplan \
+                        -var="aws_access_key=$aws_access_key" \
+                        -var="aws_secret_key=$aws_secret_key"'
+            }
+        }
+    }
+    // Apply the resources
+    stage('Backend-Apply') {
+        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                        string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+                            dir('03_02-03_remotestate/remote_resources') {
+                                sh script: '../../terraform apply backend.tfplan'
+                            }
+        }
+    }
+    // Initialize the configuration
+    stage('Config-Init') {
+        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                        string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+                            dir('03_02-03_remotestate') {
+                                sh script: '../terraform init \
+                                            -backend-config="bucket=sako-tfstate" \
+                                            -backend-config="key=sako/ecommerceapp/app.state" \
+                                            -backend-config="region=us-east-1" \
+                                            -backend-config="dynamodb_table=sako-tfstatelock" \
+                                            -backend-config="access_key=$aws_access_key" \
+                                            -backend-config="secret_key=$aws_secret_key"'
+                            }
+                        }
+    }
+    stage('Config-Plan') {
+        // Generate Terraform plan
+        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                        string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+                            dir('03_02-03_remotestate') {
+                                sh script: '../terraform plan \
+                                            -out s1.tfplan \
+                                            -var="aws_access_key=$aws_access_key" \
+                                            -var="aws_secret_key=$aws_secret_key"'
+                            }
+        }
+    }
+    stage('Config-Apply') {
+        // Apply the configuration
+        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                        string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+                            dir('03_02-03_remotestate') {
+                                sh script: '../terraform apply s1.tfplan'
+                            }
+        }
+    }
+    stage('Destroy'){
+        // Uncomment the line below if you want to be promted whether to destroy or not
+        //input 'Destroy?'
+        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
+                        string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
+            dir('03_02-03_remotestate') {
+                sh script: '../terraform destroy \
+                        -auto-approve \
+                        -var="aws_access_key=$aws_access_key" \
+                        -var="aws_secret_key=$aws_secret_key"'
+            }
+            dir('03_02-03_remotestate/remote_resources') {
+                sh script: '../../terraform destroy \
+                        -auto-approve \
+                        -var="aws_access_key=$aws_access_key" \
+                        -var="aws_secret_key=$aws_secret_key"'
+            }
+        }
+    }
+}

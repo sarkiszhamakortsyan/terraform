@@ -1,3 +1,6 @@
+# //////////////////////////////
+# VARIABLES
+# //////////////////////////////
 variable "aws_access_key" {}
 
 variable "aws_secret_key" {}
@@ -7,19 +10,19 @@ variable "region" {
 }
 
 variable "instance_count" {
-  type    = number
+  type = number
   default = 1
 }
 
 variable "instance_tags" {
-  type    = map
-  default = {
-    "environment" = "DEV"
-  }
+    type = map
+    default = {
+      "environment" = "staging"
+    }
 }
-
-// Output variable
-
+# //////////////////////////////
+# OUTPUT
+# //////////////////////////////
 output "instance-ip" {
   value = module.ec2_cluster.public_ip
 }
